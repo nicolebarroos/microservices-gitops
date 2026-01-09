@@ -1,0 +1,11 @@
+apiVersion: v2
+name: auth-service
+description: Wrapper chart for auth-service (uses platform-lib)
+type: application
+version: 0.1.0
+appVersion: "1.0"
+
+dependencies:
+  - name: platform-lib
+    version: 0.1.0
+    repository: "file://../../platform-lib"

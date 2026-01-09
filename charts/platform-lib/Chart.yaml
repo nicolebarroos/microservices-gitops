@@ -1,0 +1,5 @@
+apiVersion: v2
+name: platform-lib
+type: library
+version: 0.1.0
+description: Base library chart with reusable templates (deployment, service, hpa, configmap)

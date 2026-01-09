@@ -1,0 +1,22 @@
+# Ambiente: homolog
+# CI atualiza SOMENTE: image.tag
+
+env:
+  ENVIRONMENT: "homolog"
+
+deployment:
+  replicas: 2
+
+image:
+  tag: "sha-00000000"  # <- CI sobrescreve no PR
+
+hpa:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi

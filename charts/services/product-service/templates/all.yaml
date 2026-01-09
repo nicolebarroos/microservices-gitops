@@ -1,0 +1,7 @@
+{{- include "platform-lib.configmap" . }}
+---
+{{- include "platform-lib.deployment" . }}
+---
+{{- include "platform-lib.service" . }}
+---
+{{- include "platform-lib.hpa" . }}

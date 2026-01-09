@@ -1,0 +1,228 @@
+# -------------------------------------------------------------------
+# Comentários para estudo pessoal!!!!
+# -------------------------------------------------------------------
+
+# Sobrescreve o nome base do chart.
+# Útil quando o nome do release não deve aparecer no nome do recurso.
+nameOverride: ""
+
+# Sobrescreve o nome completo (fullname).
+# Usado quando você quer controle TOTAL sobre o nome do Deployment/Service.
+fullnameOverride: ""
+
+# -------------------------------------------------------------------
+# IMAGEM DO CONTAINER
+# -------------------------------------------------------------------
+
+image:
+  # Repositório da imagem Docker (ex: ECR, DockerHub).
+  # Normalmente definido no chart do serviço (não no environment).
+  repository: ""
+
+  # Tag da imagem.
+  # Em GitOps, este é o principal campo alterado pelo CI.
+  tag: "latest"
+
+  # Política de pull da imagem:
+  # - IfNotPresent: baixa só se não existir no nó
+  # - Always: sempre baixa (comum quando se usa :latest)
+  pullPolicy: IfNotPresent
+
+# -------------------------------------------------------------------
+# SERVICE (EXPOSIÇÃO INTERNA NO CLUSTER)
+# -------------------------------------------------------------------
+
+service:
+  # Ativa ou desativa a criação do Service.
+  enabled: true
+
+  # Tipo do Service:
+  # - ClusterIP: acesso interno no cluster (padrão)
+  # - NodePort: expõe porta no nó
+  # - LoadBalancer: IP externo (cloud)
+  type: ClusterIP
+
+  # Porta exposta pelo Service
+  port: 80
+
+  # Porta do container (onde a aplicação realmente escuta)
+  targetPort: 8000
+
+# -------------------------------------------------------------------
+# DEPLOYMENT (GERENCIAMENTO DOS PODS)
+# -------------------------------------------------------------------
+
+deployment:
+  # Quantidade de Pods rodando simultaneamente
+  replicas: 2
+
+  # Estratégia de atualização dos Pods
+  strategy:
+    # RollingUpdate é a estratégia padrão em produção
+    type: RollingUpdate
+
+    rollingUpdate:
+      # Quantos Pods extras podem subir durante o deploy
+      maxSurge: 25%
+
+      # Quantos Pods podem ficar indisponíveis durante o deploy
+      maxUnavailable: 25%
+
+# -------------------------------------------------------------------
+# RECURSOS (CPU / MEMÓRIA)
+# -------------------------------------------------------------------
+
+resources:
+  requests:
+    # Quantidade mínima de CPU reservada para o Pod
+    cpu: 100m
+
+    # Quantidade mínima de memória reservada
+    memory: 128Mi
+
+  limits:
+    # Limite máximo de CPU que o Pod pode usar
+    cpu: 300m
+
+    # Limite máximo de memória
+    memory: 256Mi
+
+# -------------------------------------------------------------------
+# METADADOS DO POD
+# -------------------------------------------------------------------
+
+# Labels adicionais aplicados ao Pod
+# Usados para observabilidade, métricas, filtros, etc.
+podLabels: {}
+
+# Annotations adicionais no Pod
+# Muito usadas por ferramentas como Prometheus, Istio, Datadog
+podAnnotations: {}
+
+# -------------------------------------------------------------------
+# VARIÁVEIS DE AMBIENTE
+# -------------------------------------------------------------------
+
+# Variáveis de ambiente simples, injetadas direto no container
+env: {}
+
+# Se true, injeta TODAS as chaves de um ConfigMap como variáveis de ambiente
+envFromConfigMap: false
+
+# -------------------------------------------------------------------
+# CONFIGMAP
+# -------------------------------------------------------------------
+
+configMap:
+  # Ativa ou desativa a criação do ConfigMap
+  enabled: false
+
+  # Dados do ConfigMap (chave: valor)
+  # Usado apenas para configurações NÃO sensíveis
+  data: {}
+
+# -------------------------------------------------------------------
+# SERVICE ACCOUNT
+# -------------------------------------------------------------------
+
+serviceAccount:
+  # Cria um ServiceAccount dedicado para o Pod
+  # Necessário para permissões (ex: IRSA na AWS)
+  create: false
+
+  # Nome do ServiceAccount existente a ser usado
+  name: ""
+
+# -------------------------------------------------------------------
+# INGRESS (ENTRADA HTTP/HTTPS NO CLUSTER)
+# -------------------------------------------------------------------
+
+ingress:
+  # Ativa ou desativa o Ingress
+  enabled: false
+
+  # Classe do Ingress Controller
+  # Exemplos:
+  # - nginx
+  # - alb (AWS)
+  className: ""
+
+  # Annotations específicas do controller
+  # Ex: rewrite, SSL, timeout, auth
+  annotations: {}
+
+  # Hosts que o Ingress vai responder
+  # Exemplo:
+  # - host: api.exemplo.com
+  #   paths:
+  #     - path: /
+  #       pathType: Prefix
+  hosts: []
+
+  # Configuração de TLS (HTTPS)
+  # Define secrets com certificados
+  tls: []
+
+# -------------------------------------------------------------------
+# HPA (HORIZONTAL POD AUTOSCALER)
+# -------------------------------------------------------------------
+
+hpa:
+  # Ativa ou desativa o autoscaling
+  enabled: false
+
+  # Quantidade mínima de Pods
+  minReplicas: 2
+
+  # Quantidade máxima de Pods
+  maxReplicas: 5
+
+  metrics:
+    cpu:
+      # Ativa scaling baseado em CPU
+      enabled: true
+
+      # Percentual médio de uso de CPU para escalar
+      # Ex: 75% → se passar disso, escala
+      targetAverageUtilization: 75
+
+# -------------------------------------------------------------------
+# PROBES (SAÚDE DO CONTAINER)
+# -------------------------------------------------------------------
+
+probes:
+  # Ativa ou desativa probes
+  enabled: true
+
+  # LIVENESS PROBE
+  # Verifica se o container AINDA ESTÁ VIVO
+  # Se falhar → Kubernetes reinicia o container
+  liveness:
+    # Endpoint HTTP de saúde
+    path: /health
+
+    # Porta do container
+    port: 8000
+
+    # Tempo inicial antes de começar a checar
+    initialDelaySeconds: 10
+
+    # Intervalo entre checagens
+    periodSeconds: 10
+
+    # Tempo máximo de espera por resposta
+    timeoutSeconds: 2
+
+    # Quantas falhas seguidas até considerar morto
+    failureThreshold: 3
+
+  # READINESS PROBE
+  # Verifica se o Pod PODE RECEBER TRÁFEGO
+  # Se falhar → Pod sai do Service (mas não reinicia)
+  readiness:
+    path: /health
+    port: 8000
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
