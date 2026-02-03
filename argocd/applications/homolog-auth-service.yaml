@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homolog-auth-service
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/part-of: homolog
+spec:
+  project: homolog
+
+  source:
+    repoURL: git@github.com:nicolebarroos/microservices-gitops.git
+    targetRevision: main
+    path: charts/services/auth-service
+    helm:
+      valueFiles:
+        - ../../../environments/homolog/values/auth-service.values.yaml
+
+  destination:
+    server: https://application-control-plane:6443
+    namespace: homolog-auth
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
