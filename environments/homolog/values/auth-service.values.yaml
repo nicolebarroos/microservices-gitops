@@ -1,0 +1,74 @@
+nameOverride: auth-service
+fullnameOverride: ""
+
+image:
+  repository: 058264179667.dkr.ecr.us-east-1.amazonaws.com/auth-service
+  tag: dev
+  pullPolicy: IfNotPresent
+
+deployment:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: false
+  className: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+probes:
+  enabled: true
+
+  liveness:
+    path: /health
+    port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+  readiness:
+    path: /health
+    port: 8000
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+env:
+  APP_NAME: auth-service
+  ENVIRONMENT: default
+
+envFromConfigMap: false
+
+configMap:
+  enabled: false
+
+hpa:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    cpu:
+      enabled: true
+      targetAverageUtilization: 75
+
+serviceAccount:
+  create: false
+  name: auth-service-sa
