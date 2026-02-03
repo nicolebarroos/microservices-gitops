@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image:
   repository: 058264179667.dkr.ecr.us-east-1.amazonaws.com/auth-service
-  tag: dev
+  tag: sha-ce3da2b6
   pullPolicy: IfNotPresent
 
 deployment:
