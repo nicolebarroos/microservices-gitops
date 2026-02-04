@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homolog-product-service
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: homolog
+    app.kubernetes.io/name: product-service
+spec:
+  project: homolog
+
+  destination:
+    server: https://application-control-plane:6443
+    namespace: homolog-product
+
+  source:
+    repoURL: git@github.com:nicolebarroos/microservices-gitops.git
+    targetRevision: main
+    path: charts/services/product-service
+    helm:
+      releaseName: product-service
+      valueFiles:
+        - ../../../environments/homolog/values/product-service.values.yaml
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ApplyOutOfSyncOnly=true
+      - PruneLast=true
+      - RespectIgnoreDifferences=true
